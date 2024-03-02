@@ -1,6 +1,6 @@
 import BookController from "../controllers/BookController";
 
-    const BookResolver = {
+    export const BookQueryResolver = {
         
             books: BookController.listAllBooks,
             book: BookController.getBookByID,
@@ -9,6 +9,8 @@ import BookController from "../controllers/BookController";
             isAvailable: BookController.isAvailable
     }
 
-export default BookResolver
+    export const BookMutationResolver = {
+        
+    }
 
 
