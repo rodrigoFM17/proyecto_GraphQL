@@ -1,5 +1,6 @@
 import db from "../db.config";
 import { verifyJWT } from "../services/JWTService";
+import { createID } from "../services/CreateIDService";
 
 const listAllBooks = async (__:void, args: any, context: any ) => {
   try {
@@ -95,6 +96,63 @@ const isAvailable = async (__:void, args: any, context: any) => {
   }
   
 }
+//Mutaciones
+const createBook = async (__:void, args: any, context: any) =>{
+  try {
+    // const token = context.headers.authorization
+    // if(verifyJWT(token)){
+      const idBook = createID();
+      console.log(idBook?.length);
+      const book = {
+        id: idBook,
+        name: args.name,
+        author: args.author,
+        year: args.year
+      }
+      const result = await db.query("INSERT INTO library.books (id,name, author, year) VALUES (?,?,?,?)",
+      [book.id, book.name, book.author, book.year]);
+
+      console.log(result);
+      return book;
+    // }
+  } catch (e: any) {
+    console.log(e)
+    return e.message;
+  }
+}
+
+const lendBook = async(__:void, args:any) =>{
+  try {
+    const id = createID();
+    const {bookId, clientId} = args;
+    const borrowBook = {
+      bookId,
+      clientId
+    }
+    const result = await db.query("INSERT INTO library.borrowedBooks (borrowId,bookId,clientId) VALUES (?,?,?)",
+      [id, bookId, clientId]);
+
+      console.log(result);
+    return borrowBook;
+  } catch (e: any) {
+    console.log(e)
+    return e.message;
+  }
+}
+
+const returnBook = async(__:void, args:any) =>{
+  try {
+    const { borrowId } = args;
+    const result = await db.execute("DELETE FROM library.borrowedBooks WHERE borrowId = ?", [borrowId]);
+    if (result) {
+      return "Libro devuelto";
+    }
+    return "Error al devolver el libro";
+  } catch (e: any) {
+    console.log(e)
+    return e.message;
+  }
+} 
 
 
 export default {
@@ -102,5 +160,8 @@ export default {
     getBookByID,
     getAvailableBooks,
     getBorrowedBooks,
-    isAvailable
+    isAvailable,
+    createBook,
+    lendBook,
+    returnBook
 }

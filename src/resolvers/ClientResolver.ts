@@ -9,7 +9,8 @@ export const ClientQueryResolver = {
 
 export const ClientMutationResolver = {
 
-        login: ClientController.login
-
+        login: ClientController.login,
+        register: ClientController.registerclient,
+        updateCellphone: ClientController.updateTel
 
 }

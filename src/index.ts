@@ -1,7 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer} from '@apollo/server/standalone'
 import 'dotenv/config'
-import { BookQueryResolver } from "./resolvers/BookResolver"; "./resolvers/BookResolver";
+import { BookQueryResolver, BookMutationResolver } from "./resolvers/BookResolver";
 import { ClientQueryResolver, ClientMutationResolver } from "./resolvers/ClientResolver";
 
 
@@ -19,7 +19,14 @@ const typeDefs= `
         id: ID
         name: String
         tel: String
+        password: String
     } 
+
+    type BorrowBook {
+        borrowId: ID
+        bookId: ID
+        clientId: ID
+    }
     
 
     type Query {
@@ -34,6 +41,11 @@ const typeDefs= `
 
     type Mutation {
         login(tel: String, password: String): String
+        createBook(name: String, author: String, year: Int): Book
+        register(name: String, tel: String, password: String): Client
+        updateCellphone(id: ID, tel: String): Client
+        lendBook(bookId: ID, clientId: ID): BorrowBook
+        returnBook(borrowId: ID): String
     }
 
 `
@@ -48,7 +60,8 @@ const resolvers = {
 
     Mutation: {
 
-        ...ClientMutationResolver
+        ...ClientMutationResolver,
+        ...BookMutationResolver
     }
 
     

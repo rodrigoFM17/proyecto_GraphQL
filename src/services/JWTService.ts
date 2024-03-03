@@ -1,7 +1,7 @@
-import 'dotenv/config'
-import jwt from 'jsonwebtoken'
+import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 
-const secret = process.env.SECRET_WORD || ''
+const secret = process.env.SECRET_WORD || '';
 export function verifyJWT (token: string) {
 
     try {
