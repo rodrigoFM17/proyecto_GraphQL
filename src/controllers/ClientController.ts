@@ -2,6 +2,7 @@ import db from '../db.config'
 import { createJWT, verifyJWT } from '../services/JWTService';
 import { createID } from '../services/CreateIDService';
 import { hashPassword, validatePassword } from '../services/EncryptPasswordService';
+import { sendMessage } from '../services/SendMessageService';
 import { getClient } from '../models/Client';
 
 
@@ -62,14 +63,14 @@ const login = async (__:void, args: any, context: any) => {
 //Mutaciones
 const registerclient = async(__:void, args: any, context: any) => {
   try {
-    const token = context.headers.authorization
-    const error = verifyJWT(token)
-    if(error)
-    throw error
+    // const token = context.headers.authorization
+    // const error = verifyJWT(token)
+    // if(error)
+    // throw error
     const auxPassword = args.password;
     const idClient = createID();
     const encyptPassword = await hashPassword(auxPassword);
-    console.log("Id: "+idClient, "Password: "+encyptPassword);
+    
     const client = {
       id: idClient,
       name: args.name,
@@ -78,7 +79,7 @@ const registerclient = async(__:void, args: any, context: any) => {
     }
     const result = await db.query("INSERT INTO library.clients (id,name,tel,password) VALUES (?,?,?,?)",
       [client.id, client.name, client.tel, client.password ]);
-
+    sendMessage(client.id);
     console.log(result);
     return client;
   } catch (e: any) {
