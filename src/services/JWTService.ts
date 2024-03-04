@@ -1,16 +1,26 @@
 import 'dotenv/config';
+import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 
 const secret = process.env.SECRET_WORD || '';
 export function verifyJWT (token: string) {
 
     try {
-        const client = jwt.verify(token, secret)
-        return client
+        jwt.verify(token, secret)
+        return null
         
     } catch(e: any){
         console.log(e)
-        return null
+        throw new GraphQLError('User is not authenticated', {
+
+        extensions: {
+
+          code: 'UNAUTHENTICATED',
+
+          http: { status: 401 },
+
+        },
+    })
     }
         
     

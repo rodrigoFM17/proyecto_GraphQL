@@ -5,60 +5,66 @@ import { createID } from "../services/CreateIDService";
 const listAllBooks = async (__:void, args: any, context: any ) => {
   try {
     const token = context.headers.authorization
-    if(verifyJWT(token)){
-      const {page, limit} = args
-  
+    const error = verifyJWT(token)
+    if(error)
+    throw error
+    
+    const {page, limit} = args
        
-      const [books] = page && limit ? 
-      await db.execute(`select * from books limit ${limit} offset ${(page - 1) * limit} `)
-      :
-      await db.execute("select * from books")
+    const [books] = page && limit ? 
+    await db.execute(`select * from books limit ${limit} offset ${(page - 1) * limit} `)
+    :
+    await db.execute("select * from books")
   
-      return books
-    }
-    return null
+    return books
+    
   } catch (e: any) {
     console.log(e);
-    return e.message;
+    return e;
   }
 };
 
 const getBookByID = async (__: void, args: any, context: any) => {
   try {
-
     const token = context.headers.authorization
-    if(verifyJWT(token)){
+    const error = verifyJWT(token)
+    if(error)
+    throw error
+    
       const { id } = args;
       const [books] = await db.execute("select * from books where id = ?", [id]);
-      return Array.isArray(books) ? books[0] : null;
-    }
-    return null
+      return Array.isArray(books) ? books[0] :null
+    
+    
   } catch (e: any) {
     console.log(e);
-    return e.message;
+    return e
   }
 };
 
 const getAvailableBooks = async (__:void, args:any , context: any) => {
   try {
     const token = context.headers.authorization
-    if(verifyJWT(token)){
+    const error = verifyJWT(token)
+    if(error)
+    throw error
       const [availableBooks] = await db.execute(
         "SELECT * FROM library.books b where b.id not in (select bookId from library.borrowed_books)"
       );
       return availableBooks;
-    }
-    return null
+  
   } catch (e: any) {
     console.log(e);
-    return e.message;
+    return e
   }
 };
 
 const getBorrowedBooks = async (__:void, args: any, context: any) => {
   try{
     const token = context.headers.authorization
-    if(verifyJWT(token)){
+    const error = verifyJWT(token)
+    if(error)
+    throw error
       const {page, limit} = args
        
       const [borrowedBooks] = page && limit ? 
@@ -66,11 +72,9 @@ const getBorrowedBooks = async (__:void, args: any, context: any) => {
       :
       await db.execute("SELECT * FROM borrowed_books bb join books b on bb.bookId = b.id")
       return borrowedBooks
-    }
-    return null
   } catch(e:any){
     console.log(e)
-    return e.message
+    return e
   }
 }
 
@@ -78,7 +82,10 @@ const isAvailable = async (__:void, args: any, context: any) => {
   try{
     
     const token = context.headers.authorization
-    if(verifyJWT(token)){
+    const error = verifyJWT(token)
+    if(error)
+    throw error
+    
       const {id} = args
       const [borrowedBooks] = await db.execute("SELECT * FROM borrowed_books bb join books b on bb.bookId = b.id where b.id = ?", [id])
     
@@ -86,21 +93,20 @@ const isAvailable = async (__:void, args: any, context: any) => {
     
       if(Array.isArray(borrowedBooks) && borrowedBooks.length)
         return false
-    
-      return true
-    }
-    return null
   } catch (e: any){
-    console.log(e)
-    return e.message
+    return e
   }
   
 }
 //Mutaciones
 const createBook = async (__:void, args: any, context: any) =>{
   try {
-    // const token = context.headers.authorization
-    // if(verifyJWT(token)){
+
+    
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
       const idBook = createID();
       console.log(idBook?.length);
       const book = {
@@ -114,15 +120,18 @@ const createBook = async (__:void, args: any, context: any) =>{
 
       console.log(result);
       return book;
-    // }
   } catch (e: any) {
     console.log(e)
-    return e.message;
+    return e
   }
 }
 
-const lendBook = async(__:void, args:any) =>{
+const lendBook = async(__:void, args:any, context: any) =>{
   try {
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
     const id = createID();
     const {bookId, clientId} = args;
     const borrowBook = {
@@ -136,12 +145,16 @@ const lendBook = async(__:void, args:any) =>{
     return borrowBook;
   } catch (e: any) {
     console.log(e)
-    return e.message;
+    return e
   }
 }
 
-const returnBook = async(__:void, args:any) =>{
+const returnBook = async(__:void, args:any, context: any) =>{
   try {
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
     const { borrowId } = args;
     const result = await db.execute("DELETE FROM library.borrowedBooks WHERE borrowId = ?", [borrowId]);
     if (result) {
@@ -150,7 +163,7 @@ const returnBook = async(__:void, args:any) =>{
     return "Error al devolver el libro";
   } catch (e: any) {
     console.log(e)
-    return e.message;
+    return e
   }
 } 
 

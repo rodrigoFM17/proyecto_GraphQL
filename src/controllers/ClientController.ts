@@ -1,63 +1,71 @@
 import db from '../db.config'
 import { createJWT, verifyJWT } from '../services/JWTService';
 import { createID } from '../services/CreateIDService';
-import { hashPassword } from '../services/EncryptPasswordService';
+import { hashPassword, validatePassword } from '../services/EncryptPasswordService';
+import { getClient } from '../models/Client';
+
 
 const listAllClients = async (__:void, args: any, context:any) => {
   try {
     const token = context.headers.authorization
-    if(verifyJWT(token)){
-      const [clients] = await db.execute("select * from clients");
-      return clients;
-    }
-
-    return 'no tienes acceso'
+    const error = verifyJWT(token)
+    if(error)
+    throw error
+    const [clients] = await db.execute("select * from clients");
+    return clients;
 
   } catch (e: any) {
     console.log(e);
-    return e.message;
+    return e
   }
 };
 
 const getClientByID = async (__: void, args: any, context: any) => {
   try {
     const token = context.headers.authorization
-    if(verifyJWT(token)){
+    const error = verifyJWT(token)
+    if(error)
+    throw error
       const { id } = args;
       const [clients] = await db.execute("select * from clients where id = ?", [
         id,
       ]);
 
       return Array.isArray(clients) ? clients[0] : null;
-    }
-    return null
   } catch (e: any) {
     console.log(e);
-    return e.message;
+    return e
   }
 };
 
-const login = async (__:void, args: any) => {
+const login = async (__:void, args: any, context: any) => {
   try{  
-
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
     const {tel, password} = args
-    const [clients] = await db.execute("select * from clients where tel = ? && password = ?", [tel, password])
-    console.log(clients)
-    if(Array.isArray(clients) && clients.length) {
-      const token = createJWT(tel, password)
-      return token
-    }
 
+    const client = await getClient(tel)
+
+    if(client && await validatePassword(password,client.password)){
+      return createJWT(tel, password)
+    } 
+    
     return 'usuario o contrasena incorrecto'
 
   } catch (e: any){
     console.log(e)
-    return e.message
+    return e
   }
 }
 //Mutaciones
-const registerclient = async(__:void, args: any) => {
+const registerclient = async(__:void, args: any, context: any) => {
   try {
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
     const auxPassword = args.password;
     const idClient = createID();
     const encyptPassword = await hashPassword(auxPassword);
@@ -75,11 +83,11 @@ const registerclient = async(__:void, args: any) => {
     return client;
   } catch (e: any) {
     console.log(e)
-    return e.message;
+    return e
   }
 }
 
-const updateTel = async(__:void, args: any) =>{
+const updateTel = async(__:void, args: any, context: any) =>{
   try {
     const {id, tel} = args;
     const client = {
@@ -92,7 +100,7 @@ const updateTel = async(__:void, args: any) =>{
     return client;
   }  catch (e: any) {
     console.log(e)
-    return e.message;
+    return e
   }
 }
 
