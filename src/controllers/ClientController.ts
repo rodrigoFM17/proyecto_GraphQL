@@ -63,10 +63,10 @@ const login = async (__:void, args: any, context: any) => {
 //Mutaciones
 const registerclient = async(__:void, args: any, context: any) => {
   try {
-    // const token = context.headers.authorization
-    // const error = verifyJWT(token)
-    // if(error)
-    // throw error
+    const token = context.headers.authorization
+    const error = verifyJWT(token)
+    if(error)
+    throw error
     const auxPassword = args.password;
     const idClient = createID();
     const encyptPassword = await hashPassword(auxPassword);
